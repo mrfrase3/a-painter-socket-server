@@ -56,12 +56,6 @@ io.on('connect', function(socket){
         }
     });
 
-	/*socket.on('addPoint', function(data){
-    	var event = {type: "addPoint", owner: socket.owner, data: data};
-    	socket.broadcast.to(socket.joinedRoom).emit('pushStrokes', [event]);
-    	roomlog[socket.joinedRoom].push(event);
-    });*/
-
 	socket.on('newStroke', function(event){
     	if(!socket.joinedRoom) return;
     	event.stroke.owner = socket.owner;
@@ -85,27 +79,8 @@ io.on('connect', function(socket){
     	roomlog[socket.joinedRoom].push(['newPoints', event]);
     	console.log('newPoints');
     });
-	
-	/*socket.on('pushEventBuffer', function(buffer){
-    	
-    	for(var i = 0; i < buffer.length; i++){
-    		buffer[i].owner = socket.owner;
-        	if(buffer[i].type == "removeStroke"){
-            	roomlog[socket.joinedRoom] = roomlog[socket.joinedRoom].filter(function(e){
-                	return e.owner != this.owner || !e.countAt || e.countAt != this.countAt;
-                }, buffer[i]);
-            } else if(buffer[i].type == "clearStrokes"){
-            	roomlog[socket.joinedRoom] = roomlog[socket.joinedRoom].filter(function(e){
-                	return e.owner != this.owner;
-                }, buffer[i]);
-            } else {
-        		roomlog[socket.joinedRoom].push(buffer[i]);
-            }
-        }
-    	socket.broadcast.to(socket.joinedRoom).emit('pushStrokes', buffer);
-    });*/
 
-	socket.emit('giveOwner', socket.owner);
+    socket.emit('giveOwner', socket.owner);
 });
 
 server.listen(3002);

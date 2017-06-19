@@ -1,0 +1,21 @@
+{
+  "name": "a-painter-socket-server",
+  "version": "1.0.0",
+  "description": "socket based server implementation for multi-user a-painter",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mrfrase3 - Fraser Bullock",
+  "license": "MIT",
+  "devDependencies": {
+    "cross-env": "^2.0.1",
+    "semistandard": "^9.0.0",
+    "snazzy": "^4.0.1",
+    "webpack": "^1.13.2",
+    "webpack-dev-server": "^1.16.1",
+    "webpack-dev-middleware": "^1.8.3",
+    "express": "^4.14.0",
+    "socket.io": "^1.4.8"
+  }
+}

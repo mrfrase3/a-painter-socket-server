@@ -94,15 +94,19 @@ AFRAME.registerComponent('multiplayer', {
 	  this.socket = io.connect();
       var self = this;
     
-	  this.socket.on('giveOwner', function(owner){
+	  this.socket.on('giveOwner', owner => {
     	self.socket.owner = owner;
 		self.socket.emit('joinRoom', hash);
       });
     
-	  this.socket.on('joinedRoom', function(){
+	  this.socket.on('joinedRoom', history => {
     	console.log("successfully joined a session");
     	self.data.joinedRoom = true;
         document.querySelector('a-scene').systems['brush'].clear();
+        for(let i in history){
+          this.system.newStoke({stroke: history[i].stroke});
+          this.system.newPoints([history[i]]);
+        }
       });
     
       this.socket.on('removeStroke', event => {

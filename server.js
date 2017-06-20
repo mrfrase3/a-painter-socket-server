@@ -49,35 +49,36 @@ io.on('connect', function(socket){
 	socket.on('joinRoom', function(room){
     	socket.joinedRoom = room;
     	socket.join(room);
-    	socket.emit('joinedRoom');
-    	if(!roomlog[room]) roomlog[room] = [];
-    	else {
-        	for(let i in roomlog[room]) socket.emit(roomlog[room][i][0], roomlog[room][i][1]);
-        }
+    	if(!roomlog[room]) roomlog[room] = {};
+    	socket.emit('joinedRoom', roomlog[room]);
     });
 
 	socket.on('newStroke', function(event){
     	if(!socket.joinedRoom) return;
     	event.stroke.owner = socket.owner;
     	socket.broadcast.to(socket.joinedRoom).emit('newStroke', event);
-    	roomlog[socket.joinedRoom].push(['newStroke', event]);
-        console.log(event);
+    	let rl_index = event.stroke.owner + "-" + event.stroke.timestamp;
+    	event.points = [];
+    	roomlog[socket.joinedRoom][rl_index] = event;
     });
 
 	socket.on('removeStroke', function(event){
     	if(!socket.joinedRoom) return;
     	event.stroke.owner = socket.owner;
     	socket.broadcast.to(socket.joinedRoom).emit('removeStroke', event);
-    	roomlog[socket.joinedRoom].push(['removeStroke', event]);
-    	console.log(event);
+    	let rl_index = event.stroke.owner + "-" + event.stroke.timestamp;
+    	delete roomlog[socket.joinedRoom][rl_index];
     });
 
 	socket.on('newPoints', function(event){
     	if(!socket.joinedRoom) return;
     	for(let i in event) event[i].stroke.owner = socket.owner;
     	socket.broadcast.to(socket.joinedRoom).emit('newPoints', event);
-    	roomlog[socket.joinedRoom].push(['newPoints', event]);
-    	console.log('newPoints');
+    	for(let i in event){
+        	let rl_index = event[i].stroke.owner + "-" + event[i].stroke.timestamp;
+        	if(!roomlog[socket.joinedRoom][rl_index]) continue;
+        	roomlog[socket.joinedRoom][rl_index].points = roomlog[socket.joinedRoom][rl_index].points.concat(event[i].points);
+        }
     });
 
     socket.emit('giveOwner', socket.owner);

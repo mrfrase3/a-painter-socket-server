@@ -6,6 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/mrfrase3/a-painter-socket-server.git"
+  },
   "author": "mrfrase3 - Fraser Bullock",
   "license": "MIT",
   "devDependencies": {

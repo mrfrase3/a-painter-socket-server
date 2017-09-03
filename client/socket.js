@@ -80,9 +80,9 @@ AFRAME.registerSystem('multiplayer', {
   userLeave: function(event){
     var ruser = this.remoteUsers[event.owner];
     if(!ruser) return;
-    ruser.lhand.setAttribute('visable', false);
-    ruser.rhand.setAttribute('visable', false);
-    ruser.head.setAttribute('visable', false);
+    ruser.lhand.setAttribute('visible', false);
+    ruser.rhand.setAttribute('visible', false);
+    ruser.head.setAttribute('visible', false);
     ruser.visable = false;
   },
 
@@ -106,9 +106,9 @@ AFRAME.registerSystem('multiplayer', {
       document.querySelector('a-scene').appendChild(ruser.head);
     }
     if(!ruser.visable){
-      ruser.lhand.setAttribute('visable', true);
-      ruser.rhand.setAttribute('visable', true);
-      ruser.head.setAttribute('visable', true);
+      ruser.lhand.setAttribute('visible', true);
+      ruser.rhand.setAttribute('visible', true);
+      ruser.head.setAttribute('visible', true);
       ruser.visable = true;
     }
     for(let i in {'lhand':'', 'rhand':'', 'head':''}){
@@ -183,9 +183,7 @@ AFRAME.registerSystem('multiplayer', {
     if(time - this.lastStokeSendTime >= 33){
       this.lastStokeSendTime = time;
       this.sendStrokes();
-    }
-
-    if(this.isTrackingMovement && time - this.lastMovementTime >= 33){
+    } else if(this.isTrackingMovement && time - this.lastMovementTime >= 33){
       this.lastMovementTime = time;
       this.sendMovement();
     }
@@ -220,8 +218,6 @@ AFRAME.registerComponent('multiplayer', {
         for(let i in history){
           this.strokeBuffer.push({stroke: history[i].stroke});
           this.strokeBuffer.push([history[i]]);
-          //this.system.newStoke({stroke: history[i].stroke});
-          //this.system.newPoints([history[i]]);
         }
       });
 
@@ -233,13 +229,11 @@ AFRAME.registerComponent('multiplayer', {
       this.socket.on('newStroke', event => {
         if(event.stroke.owner === self.socket.owner) return;
         this.strokeBuffer.push(event);
-        //this.system.newStoke(event);
       });
 
       this.socket.on('newPoints', event => {
         if(!event[0] || event[0].stroke.owner === self.socket.owner) return;
         this.strokeBuffer.push(event);
-        //this.system.newPoints(event);
       });
 
       this.socket.on('userMove', event => {

@@ -10,16 +10,31 @@ AFRAME.registerComponent('remote-controls', {
     console.log(this.data);
     var el = this.el;
     var self = this;
-    el.setAttribute('json-model', {src: 'assets/models/controller_vive.json'});
-    var textureUrl = 'assets/images/controller-diffuse.png';
+    el.setAttribute('obj-model', {obj: 'assets/models/vive-controller.obj'});
+    el.setAttribute('material', {color: self.data.color});
+  },
 
-    function createTexture (texture) {
-      var material = self.highLightMaterial = new THREE.MeshBasicMaterial();
-      material.map = texture;
-      material.needsUpdate = true;
-      material.color = self.data.color;
-    }
-    el.sceneEl.systems.material.loadTexture(textureUrl, {src: textureUrl}, createTexture);
+  tick: function(time,delta){}
+
+});
+
+AFRAME.registerComponent('remote-headset', {
+
+  schema: {
+    owner: {default: 'local'},
+    color: {default: '#33a02c'}
+  },
+
+  init: function () {
+    console.log(this.data);
+    var el = this.el;
+    var self = this;
+    el.setAttribute('json-model', {src: 'client/remote_head.json'});
+
+    el.addEventListener('model-loaded', e => {
+      el.object3DMap.mesh.children[0].material.color = new THREE.Color(self.data.color);
+    });
+
   },
 
   tick: function(time,delta){}

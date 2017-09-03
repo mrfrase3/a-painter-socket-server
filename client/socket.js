@@ -3,28 +3,18 @@ AFRAME.registerSystem('multiplayer', {
   init: function(){
     var self = this;
     this.brush = document.querySelector('a-scene').systems['brush'];
-    this.isTrackingMovement = false;
+
+    this.lastStokeSendTime = 0;
     this.lastMovementTime = 0;
+    this.isTrackingMovement = false;
     this.userElements = {
       lhand: document.getElementById('left-hand'),
-      rhand: document.getElementById('right-hand')/*,
-      head: document.getElementById('acamera')*/
+      rhand: document.getElementById('right-hand'),
+      head: document.getElementById('acamera')
     };
     this.remoteUsers = {};
-    this.remoteColors = [
-      '#a6cee3',
-      '#1f78b4',
-      '#b2df8a',
-      '#33a02c',
-      '#fb9a99',
-      '#e31a1c',
-      '#fdbf6f',
-      '#ff7f00',
-      '#cab2d6',
-      '#6a3d9a',
-      '#ffff99',
-      '#b15928'
-    ]
+    this.remoteColors = ['#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c',
+      '#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#a6cee3','#b15928'];
 
     this.findStroke = (owner, timestamp) => {
         for(var i = this.brush.strokes.length-1; i >= 0; i--){ // the stroke being looked for is most likely at the end of the array
@@ -48,10 +38,16 @@ AFRAME.registerSystem('multiplayer', {
       this.isTrackingMovement = true;
     });
 
+    document.querySelector('a-scene').addEventListener('exit-vr', event => {
+      this.isTrackingMovement = false;
+      this.onUserLeave();
+    });
+
     this.onNewStroke = function(event){};
     this.onRemoveStroke = function(event){};
     this.onNewPoints = function(event){};
     this.onUserMove = function(event){};
+    this.onUserLeave = function(){};
 
   },
 
@@ -81,24 +77,41 @@ AFRAME.registerSystem('multiplayer', {
     }
   },
 
+  userLeave: function(event){
+    var ruser = this.remoteUsers[event.owner];
+    if(!ruser) return;
+    ruser.lhand.setAttribute('visable', false);
+    ruser.rhand.setAttribute('visable', false);
+    ruser.head.setAttribute('visable', false);
+    ruser.visable = false;
+  },
+
   userMove(event){
     var ruser = this.remoteUsers[event.owner];
     if(!ruser){
-      let color = this.remoteColors[0];//(this.remoteUsers.length%this.remoteColors.length)];
+      let color = this.remoteColors[(Object.keys(this.remoteUsers).length%this.remoteColors.length)];
+      //console.log(Object.keys(this.remoteUsers).length +" % "+ this.remoteColors.length);
       ruser = this.remoteUsers[event.owner] = {
         lhand: document.createElement('a-entity'),
         rhand: document.createElement('a-entity'),
-        //head: document.createElement('a-entity'),
-        color
+        head: document.createElement('a-entity'),
+        color,
+        visible: true
       };
       ruser.lhand.setAttribute('remote-controls', 'owner: '+event.owner+';color: '+color+';');
       ruser.rhand.setAttribute('remote-controls', 'owner: '+event.owner+';color: '+color+';');
-      //ruser.head.setAttribute('remote-headset', {owner: event.owner, color});
+      ruser.head.setAttribute('remote-headset', 'owner: '+event.owner+';color: '+color+';');
       document.querySelector('a-scene').appendChild(ruser.lhand);
       document.querySelector('a-scene').appendChild(ruser.rhand);
-      //document.querySelector('a-scene').appendChild(ruser.head);
+      document.querySelector('a-scene').appendChild(ruser.head);
     }
-    for(let i in {'lhand':'', 'rhand':''/*, 'head':''*/}){
+    if(!ruser.visable){
+      ruser.lhand.setAttribute('visable', true);
+      ruser.rhand.setAttribute('visable', true);
+      ruser.head.setAttribute('visable', true);
+      ruser.visable = true;
+    }
+    for(let i in {'lhand':'', 'rhand':'', 'head':''}){
       for(let j in event[i].pos){
         event[i].pos[j] = event[i].pos[j] / 1000.0 //refocus the decimal place
         event[i].rot[j] = event[i].rot[j] / 1000.0 //refocus the decimal place
@@ -141,7 +154,7 @@ AFRAME.registerSystem('multiplayer', {
     }
   },
 
-  tick: function (time, delta) {
+  sendStrokes: function(){
     var sendStrokes = [];
     for(let i = this.brush.strokes.length-1, c = 0; i >= 0 && c < 4; i--){
       if(this.brush.strokes[i].data.owner !== 'local') continue;
@@ -163,6 +176,14 @@ AFRAME.registerSystem('multiplayer', {
       sendStrokes.push({stroke: {timestamp: stroke.data.timestamp}, points: sendPoints});
     }
     if(sendStrokes.length > 0) this.onNewPoints(sendStrokes);
+  },
+
+  tick: function (time, delta) {
+
+    if(time - this.lastStokeSendTime >= 33){
+      this.lastStokeSendTime = time;
+      this.sendStrokes();
+    }
 
     if(this.isTrackingMovement && time - this.lastMovementTime >= 33){
       this.lastMovementTime = time;
@@ -180,6 +201,8 @@ AFRAME.registerComponent('multiplayer', {
   init: function(){
     this.socket = null;
     this.system = document.querySelector('a-scene').systems['multiplayer']; //for some reason custom functions aren't initiating properly
+    this.strokeBuffer = [];
+    this.lastBufferProcess = 0;
 
     if(io) {
       this.socket = io.connect();
@@ -195,8 +218,10 @@ AFRAME.registerComponent('multiplayer', {
         console.log("successfully joined a session");
         document.querySelector('a-scene').systems['brush'].clear();
         for(let i in history){
-          this.system.newStoke({stroke: history[i].stroke});
-          this.system.newPoints([history[i]]);
+          this.strokeBuffer.push({stroke: history[i].stroke});
+          this.strokeBuffer.push([history[i]]);
+          //this.system.newStoke({stroke: history[i].stroke});
+          //this.system.newPoints([history[i]]);
         }
       });
 
@@ -207,12 +232,14 @@ AFRAME.registerComponent('multiplayer', {
 
       this.socket.on('newStroke', event => {
         if(event.stroke.owner === self.socket.owner) return;
-        this.system.newStoke(event);
+        this.strokeBuffer.push(event);
+        //this.system.newStoke(event);
       });
 
       this.socket.on('newPoints', event => {
         if(!event[0] || event[0].stroke.owner === self.socket.owner) return;
-        this.system.newPoints(event);
+        this.strokeBuffer.push(event);
+        //this.system.newPoints(event);
       });
 
       this.socket.on('userMove', event => {
@@ -220,13 +247,30 @@ AFRAME.registerComponent('multiplayer', {
         this.system.userMove(event);
       });
 
+      this.socket.on('userLeave', event => {
+        if(event.owner === self.socket.owner) return;
+        this.system.userLeave(event);
+      });
+
       this.system.onNewStroke = event => this.socket.emit('newStroke', event);
       this.system.onRemoveStroke = event => this.socket.emit('removeStroke', event);
       this.system.onNewPoints = event => this.socket.emit('newPoints', event);
       this.system.onUserMove = event => this.socket.emit('userMove', event);
+      this.system.onUserLeave = () => this.socket.emit('userLeave');
     }
   },
-  tick: function (time, delta) {}
+
+  tick: function (time, delta) {
+    if(time - this.lastBufferProcess >= 33){
+      this.lastBufferProcess = time;
+      let len = Math.min(Number(this.strokeBuffer.length), 20);
+      for(let i = 0; i < len; i++){ //don't do more than 20
+        let event = this.strokeBuffer.shift();
+        if(Array.isArray(event)) this.system.newPoints(event);
+        else this.system.newStoke(event);
+      }
+    }
+  }
 });
 
 (()=>{

@@ -78,7 +78,7 @@ io.on('connect', function(socket){
     for(let i in event){
       let rl_index = event[i].stroke.owner + "-" + event[i].stroke.timestamp;
       if(!roomlog[socket.joinedRoom][rl_index]) continue;
-      roomlog[socket.joinedRoom][rl_index].points = roomlog[socket.joinedRoom][rl_index].points.concat(event[i].points);
+      roomlog[socket.joinedRoom][rl_index].points.push.apply(roomlog[socket.joinedRoom][rl_index].points, event[i].points);
     }
   });
 
@@ -86,6 +86,16 @@ io.on('connect', function(socket){
     if(!socket.joinedRoom) return;
     event.owner = socket.owner;
     socket.broadcast.to(socket.joinedRoom).emit('userMove', event);
+  });
+
+  socket.on('userLeave', function(){
+    if(!socket.joinedRoom) return;
+    socket.broadcast.to(socket.joinedRoom).emit('userLeave', {owner: socket.owner});
+  });
+
+  socket.on('disconnect', function(){
+    if(!socket.joinedRoom) return;
+    socket.broadcast.to(socket.joinedRoom).emit('userLeave', {owner: socket.owner});
   });
 
   socket.emit('giveOwner', socket.owner);

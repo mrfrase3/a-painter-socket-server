@@ -2,9 +2,6 @@
 A socket based multiplayer server example for a-painter
 
 **Note:**
-This repo is dependant on a pull request to the main a-painter repository, nothing is concrete 
-
-**Note:**
 This is a proof of concept only, **this should not be used in production**. There are serious vulnerabilities which would not fly in production.
 
 ----------
@@ -13,8 +10,7 @@ Pretty simple!
 
  1. Download the repo to your test directory
  2. Run `npm install`
- 3. Run `git clone -b patch-1 https://github.com/mrfrase3/a-painter.git` 
- (will change to aframe repo if PR gets accepted)
+ 3. Run `git clone https://github.com/aframevr/a-painter.git` 
  4. Run `node server`
 
 ----------

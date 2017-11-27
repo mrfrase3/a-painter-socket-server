@@ -65,3 +65,4 @@ typings/
 
 #ignore a-painters directory
 a-painter/
+paintings.json

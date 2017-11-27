@@ -13,6 +13,21 @@ var compiler = webpack(webpackConfig);
 var clients = [];
 var roomlog = {};
 
+try {
+  roomlog = require('./paintings.json');
+} catch (e){
+  console.log('could not load in paintings file.');
+}
+
+setInterval(()=>{
+  let paintings_string = JSON.stringify(roomlog);
+  console.log('saving to paintings file...');
+  fs.writeFile('./paintings.json', paintings_string, (err)=>{
+    if(err) return console.error(err);
+    console.log('done');
+  });
+}, 60*1000);
+
 var token = function() {
   return Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
 };

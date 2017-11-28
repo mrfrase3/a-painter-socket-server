@@ -139,11 +139,11 @@ AFRAME.registerSystem('multiplayer', {
       let pos = this.userElements[i].getAttribute('position');
       let rot = this.userElements[i].getAttribute('rotation');
       for(let j in pos){
-        currMove[i].pos[j] = Math.round(pos[j]*1000); //keep 3 digits after decimal
+        currMove[i].pos[j] = Math.round(pos[j]*1000) || 0; //keep 3 digits after decimal
         posChanged += Math.abs(currMove[i].pos[j] - lastMove[i].pos[j]);
         lastMove[i].pos[j] = currMove[i].pos[j];
 
-        currMove[i].rot[j] = Math.round(rot[j]*1000); //keep 3 digits after decimal
+        currMove[i].rot[j] = Math.round(rot[j]*1000) || 0; //keep 3 digits after decimal
         rotChanged += Math.abs(currMove[i].rot[j] - lastMove[i].rot[j]);
         lastMove[i].rot[j] = currMove[i].rot[j];
       }

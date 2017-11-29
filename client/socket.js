@@ -7,6 +7,7 @@ AFRAME.registerSystem('multiplayer', {
     this.lastStokeSendTime = 0;
     this.lastMovementTime = 0;
     this.isTrackingMovement = false;
+    this.cameraRig = document.getElementById('cameraRig');
     this.userElements = {
       lhand: document.getElementById('left-hand'),
       rhand: document.getElementById('right-hand'),
@@ -135,11 +136,12 @@ AFRAME.registerSystem('multiplayer', {
     };
     let posChanged = 0;
     let rotChanged = 0;
+    let rigpos = this.cameraRig.getAttribute('position');
     for(let i in this.userElements){
       let pos = this.userElements[i].getAttribute('position');
       let rot = this.userElements[i].getAttribute('rotation');
       for(let j in pos){
-        currMove[i].pos[j] = Math.round(pos[j]*1000) || 0; //keep 3 digits after decimal
+        currMove[i].pos[j] = Math.round((pos[j] + rigpos[j])*1000) || 0; //keep 3 digits after decimal
         posChanged += Math.abs(currMove[i].pos[j] - lastMove[i].pos[j]);
         lastMove[i].pos[j] = currMove[i].pos[j];
 

@@ -1,6 +1,8 @@
 # A-Painter Socket Server Demo #
 A socket based multiplayer server example for a-painter
 
+We recently had the privledge to exhibit multipalyer A-Painter in the VR Showcase at SIGGRAPH Asia 2017. As a part of this we got in some local artists to try it out, you can see their paintings, and others, [here](https://mrfrase3.github.io/a-painterSA17/).
+
 **Note:**
 This is a proof of concept only, **this should not be used in production**. There are serious vulnerabilities which would not fly in production.
 

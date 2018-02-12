@@ -14,8 +14,10 @@
   "license": "MIT",
   "devDependencies": {
     "cross-env": "^2.0.1",
+    "json-loader": "^0.5.7",
     "semistandard": "^9.0.0",
     "snazzy": "^4.0.1",
+    "spritesheet-js": "^1.2.6",
     "webpack": "^1.13.2",
     "webpack-dev-server": "^1.16.1",
     "webpack-dev-middleware": "^1.8.3",

@@ -39,6 +39,7 @@ app.use('/src', express.static(painter_dir + '/src'));
 app.use('/vendor', express.static(painter_dir + '/vendor'));
 app.use('/brushes', express.static(painter_dir + '/brushes'));
 app.use('/paintings', express.static(painter_dir + '/paintings'));
+app.use('/sounds', express.static(painter_dir + '/sounds'));
 
 app.use('/client', express.static(__dirname + '/client'));
 

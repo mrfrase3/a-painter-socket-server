@@ -1,0 +1,3 @@
+[submodule "a-painter"]
+	path = a-painter
+	url = https://github.com/aframevr/a-painter.git
